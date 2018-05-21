@@ -1,1 +1,4 @@
 uiautomator>=0.3.2
+libusb1>=1.2.0
+rsa>=3.4.2
+adb==1.2.0
