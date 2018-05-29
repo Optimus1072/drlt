@@ -1,5 +1,6 @@
 from config import EVENT_TYPE
 import re
+from subprocess import check_output
 
 
 def get_bound_from_string(bound_string):
@@ -45,4 +46,32 @@ class Executor(object):
                 self.device.drag(get_scroll_point_from_bound(bound))
             elif component[1] == "text":
                 pass
+
+    def start_activity(self, package, activity):
+        output = check_output(['adb', 'shell', 'am', 'start', '-n', '{}/.{}'.format(package, activity)])
+        print(output)
+        return output
+
+    def press_back(self):
+        self.device.back()
+
+    def press_menu(self):
+        self.device.home()
+
+    def get_current_activity(self, package):
+        """Get current activity of current package."""
+        output = check_output(['adb', 'shell', 'dumpsys', 'window',
+                               'windows', '|', 'grep', '-E',
+                               "'mCurrentFocus'"])
+        cur_activity = output.split('/')[-1].replace(package+'.', '').split('}')[0]
+        return cur_activity
+
+    def is_in_app(self, package):
+        output = check_output(['adb', 'shell', 'dumpsys', 'window',
+                               'windows', '|', 'grep', '-E',
+                               "'mCurrentFocus'"])
+        if package in output:
+            return True
+        return False
+
 
