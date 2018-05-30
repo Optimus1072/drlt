@@ -5,10 +5,29 @@ import xml.etree.ElementTree as ET
 
 class Observer(object):
     device = None
+    package = None
 
-    def __init__(self, device):
+    def __init__(self, device, package):
         self.device = device
-        pass
+        self.package = package
+
+    def get_current_activity(self):
+        """Get current activity of current package."""
+        output = subprocess.check_output(['adb', 'shell', 'dumpsys', 'window',
+                               'windows', '|', 'grep', '-E',
+                               "'mCurrentFocus'"])
+        cur_activity = output.split('/')[-1].replace(self.package+'.', '').split('}')[0]
+        return cur_activity
+
+    def is_in_app(self):
+        output = str(subprocess.check_output(['adb', 'shell', 'dumpsys', 'window',
+                               'windows', '|', 'grep', '-E',
+                               "'mCurrentFocus'"]))
+        if self.package in output:
+            return True
+        print("OUT OF APP {}".format(output))
+
+        return False
 
     def get_gui_state(self):
         """

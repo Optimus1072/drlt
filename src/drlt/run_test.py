@@ -6,6 +6,7 @@ import errno
 import random
 import subprocess
 import re
+import time
 
 from observer import observer
 from executor import executor
@@ -15,8 +16,10 @@ from uiautomator import Device
 from subprocess import check_output
 
 
-
-
+STEP = 50
+APP_NAME = "_Users_tuyetvuong_fdroidapk_com.angrydoughnuts.android.alarmclock_14.apk"
+PACKAGE = "com.angrydoughnuts.android.alarmclock"
+LAUNCHER = "AlarmClockActivity"
 
 def get_index_from_bounds(bounds, step_width, step_height):
     left_index = int(bounds[0] / step_width)
@@ -50,30 +53,25 @@ def get_coverage(app_name):
 if __name__ == "__main__":
     # TODO check if device is connected
     device = Device(DEVICE)
-    observer = observer.Observer(device)
-    executor = executor.Executor(device)
-    gui = observer.get_gui_state()[0]
+    observer = observer.Observer(device, PACKAGE)
+    executor = executor.Executor(device, PACKAGE)
 
-    INPUT_SIZE = (150, 100)
-    device_info = device.info
-    phone_size = (device_info["displayHeight"], device_info["displayWidth"])
-    step_height = phone_size[0] / INPUT_SIZE[0]
-    step_width = phone_size[1]/INPUT_SIZE[1]
-    x = np.zeros(INPUT_SIZE)
-    for component in gui:
-        bounds = get_bound_from_string(component[2])
-        top_index, bottom_index, left_index, right_index = get_index_from_bounds(bounds, step_width, step_height)
-        # print(top_index, bottom_index, left_index, right_index)
-        x[top_index:bottom_index + 1, left_index:right_index + 1] = x[top_index:bottom_index+1, left_index:right_index+1] +1
+    # gui = observer.get_gui_state()[0]
+    # INPUT_SIZE = (150, 100)
+    # device_info = device.info
+    # phone_size = (device_info["displayHeight"], device_info["displayWidth"])
+    # step_height = phone_size[0] / INPUT_SIZE[0]
+    # step_width = phone_size[1]/INPUT_SIZE[1]
+    # x = np.zeros(INPUT_SIZE)
+    # for component in gui:
+    #     bounds = get_bound_from_string(component[2])
+    #     top_index, bottom_index, left_index, right_index = get_index_from_bounds(bounds, step_width, step_height)
+    #     # print(top_index, bottom_index, left_index, right_index)
+    #     x[top_index:bottom_index + 1, left_index:right_index + 1] = x[top_index:bottom_index+1, left_index:right_index+1] +1
 
     # plt.gray()
     # plt.imshow(np.uint8(x))
     # plt.show()
-
-    STEP = 10
-    APP_NAME = "_Users_vuong_PycharmProjects_ella_apk-in_com.angrydoughnuts.android.alarmclock_14.apk"
-    PACKAGE = "com.angrydoughnuts.android.alarmclock"
-    LAUNCHER = "AlarmClockActivity"
 
     start_activity(PACKAGE, LAUNCHER)
     out_dir = "./{}/".format(PACKAGE)
@@ -81,15 +79,25 @@ if __name__ == "__main__":
     mkdir_p(out_dir)
     with open(out_file, "a") as f:
         for i in range(STEP):
-            s1 = observer.get_gui_state()[0]
-            c1 = float(get_coverage(APP_NAME))
-            a = random.choice(s1)
-            executor.perform_action(a)
-            s2 = observer.get_gui_state()[0]
-            c2 = float(get_coverage(APP_NAME))
-            r = c2-c1
-            print((a, r))
-            f.write(str((s1, a, r, s2)) +"\n")
+            time.sleep(0.5)
+            k = 0
+            while (not observer.is_in_app()) and k < 5:
+                executor.press_back()
+                k = k + 1
+            if not observer.is_in_app():
+                start_activity(PACKAGE, LAUNCHER)
+            else:
+                s1 = observer.get_gui_state()[0]
+                c1 = float(get_coverage(APP_NAME))
+                a = random.choice(s1)
+                executor.perform_action(a)
+                s2 = observer.get_gui_state()[0]
+                c2 = float(get_coverage(APP_NAME))
+                r = c2-c1
+                print((a, r))
+                f.write(str((s1, a, r, s2)) +"\n")
+
+#     TODO deal with the recent activity
 
 
 
