@@ -11,22 +11,15 @@ import time
 from observer import observer
 from executor import executor
 from executor.executor import get_bound_from_string
-from config import DEVICE
+from config import DEVICE, EPISODE_LENGTH
 from uiautomator import Device
 from subprocess import check_output
+from preprocess import preprocess
 
 
-STEP = 50
 APP_NAME = "_Users_tuyetvuong_fdroidapk_com.angrydoughnuts.android.alarmclock_14.apk"
 PACKAGE = "com.angrydoughnuts.android.alarmclock"
 LAUNCHER = "AlarmClockActivity"
-
-def get_index_from_bounds(bounds, step_width, step_height):
-    left_index = int(bounds[0] / step_width)
-    right_index = int(bounds[1] / step_width)
-    top_index = int(bounds[2] / step_height)
-    bottom_index = int(bounds[3] / step_height)
-    return top_index, bottom_index, left_index, right_index
 
 def start_activity(package, activity):
     output = check_output(['adb', 'shell', 'am', 'start', '-n', '{}/.{}'.format(package, activity)])
@@ -55,30 +48,17 @@ if __name__ == "__main__":
     device = Device(DEVICE)
     observer = observer.Observer(device, PACKAGE)
     executor = executor.Executor(device, PACKAGE)
+    preprocess = preprocess.Preprocess(device)
 
-    # gui = observer.get_gui_state()[0]
-    # INPUT_SIZE = (150, 100)
-    # device_info = device.info
-    # phone_size = (device_info["displayHeight"], device_info["displayWidth"])
-    # step_height = phone_size[0] / INPUT_SIZE[0]
-    # step_width = phone_size[1]/INPUT_SIZE[1]
-    # x = np.zeros(INPUT_SIZE)
-    # for component in gui:
-    #     bounds = get_bound_from_string(component[2])
-    #     top_index, bottom_index, left_index, right_index = get_index_from_bounds(bounds, step_width, step_height)
-    #     # print(top_index, bottom_index, left_index, right_index)
-    #     x[top_index:bottom_index + 1, left_index:right_index + 1] = x[top_index:bottom_index+1, left_index:right_index+1] +1
-
-    # plt.gray()
-    # plt.imshow(np.uint8(x))
-    # plt.show()
+    gui = observer.get_gui_state()[0]
+    x = preprocess.create_input_matrix(gui)
 
     start_activity(PACKAGE, LAUNCHER)
     out_dir = "./{}/".format(PACKAGE)
     out_file = "./{}/out.txt".format(PACKAGE)
     mkdir_p(out_dir)
     with open(out_file, "a") as f:
-        for i in range(STEP):
+        for i in range(EPISODE_LENGTH):
             time.sleep(0.5)
             k = 0
             while (not observer.is_in_app()) and k < 5:
