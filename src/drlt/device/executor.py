@@ -2,16 +2,7 @@ from config import EVENT_TYPE
 import re
 import random
 import subprocess
-
-
-def get_bound_from_string(bound_string):
-    coordinate = re.findall(r'\d+', bound_string)
-    left = int(coordinate[0])
-    top = int(coordinate[1])
-    right = int(coordinate[2])
-    bottom = int(coordinate[3])
-    return [left, right, top, bottom]
-
+from utils import get_bound_from_string
 
 # def get_click_point_from_bound(bound):
 #     return ((bound[0] + bound[1])/2, (bound[2] + bound[3])/2)
@@ -100,5 +91,11 @@ class Executor(object):
 
     def press_menu(self):
         self.device.press.home()
+
+    def start_activity(self, activity):
+        output = subprocess.check_output(['adb', 'shell', 'am', 'start', '-n', '{}/.{}'.format(self.package, activity)])
+        print(output)
+        return output
+
 
 

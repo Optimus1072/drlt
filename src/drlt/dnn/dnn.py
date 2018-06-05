@@ -27,6 +27,7 @@ def bind(output, inputs):
             inputs[key] = inputs[key].value()
     return tf.contrib.graph_editor.graph_replace(output, inputs)
 
+
 def moving_average(output, decay=0.999, collection=tf.GraphKeys.TRAINABLE_VARIABLES):
     average = tf.train.ExponentialMovingAverage(decay=decay)
     variables = set(v.value() for v in output.graph.get_collection(collection))

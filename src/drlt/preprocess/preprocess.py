@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from config import INPUT_SIZE
-from executor.executor import get_bound_from_string
+from utils import get_bound_from_string
 
 
 class Preprocess(object):
@@ -18,7 +18,7 @@ class Preprocess(object):
         bottom_index = int(bounds[3] / step_height)
         return top_index, bottom_index, left_index, right_index
 
-    def create_input_matrix(self, gui):
+    def create_input_matrix_2d(self, gui):
         device_info = self.device.info
         phone_size = (device_info["displayHeight"], device_info["displayWidth"])
         step_height = phone_size[0] / INPUT_SIZE[0]
@@ -30,7 +30,6 @@ class Preprocess(object):
             # print(top_index, bottom_index, left_index, right_index)
             x[top_index:bottom_index + 1, left_index:right_index + 1] = x[top_index:bottom_index+1, left_index:right_index+1] + 1
 
-        plt.gray()
-        plt.imshow(np.uint8(x))
-        plt.show()
+        # plt.imshow(np.uint8(x))
+        # plt.show()
         return x

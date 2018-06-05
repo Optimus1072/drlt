@@ -1,7 +1,7 @@
 from config import *
 import subprocess
 import xml.etree.ElementTree as ET
-
+import re
 
 class Observer(object):
     device = None
@@ -36,6 +36,7 @@ class Observer(object):
         :return: GUI state - tuple
         """
         xml = self.device.dump()
+        print(xml)
         root = ET.fromstring(xml)
         gui_state = ()
         event_type_count = {"click": 0, "long-click": 0, "check": 0, "scroll": 0}
@@ -73,6 +74,12 @@ class Observer(object):
     def get_current_state(self):
         # state = ("number_of_gui_components", "number_of_event_type", "has_fragment_dialog", "network", "battery", "orientation")
         return self.get_gui_state() + (self.get_network_status(),) + (self.get_battery_status(),)
+
+
+def get_coverage(app_name):
+    output = str(subprocess.check_output(['python', 'tools/tool_coverage.py', app_name, 'method'], cwd="../ella/"))
+    c = re.findall(r'\d+', output)[0]
+    return c
 
 
 
