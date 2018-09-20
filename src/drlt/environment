@@ -1,0 +1,25 @@
+import logging
+import subprocess
+from .device.executor import Executor
+from .device.installer import Installer
+from .device.observer import Observer
+from uiautomator import Device
+
+
+class DeviceEnviroment(object):
+    def __init__(self, device_name, config):
+        self.device = Device(device_name)
+        self.installer = Installer()
+        self.config = config
+
+
+class AppEnvironment(DeviceEnviroment):
+    def __init__(self, device_name, config, package):
+        super().__init__(device_name, config)
+        self.package = package
+        self.observer = Observer(package, self.device)
+        self.executor = Executor(self.device, package)
+
+        self._screen = None
+        self.reward = 0
+        self.terminal = True
